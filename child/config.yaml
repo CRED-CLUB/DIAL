@@ -1,0 +1,296 @@
+
+default:
+  Notifications: &defaultNotificationsMap
+    Console: 
+      Enabled: true
+    Slack: 
+      Enabled: true
+      Hook: <slackWebHookURL>
+    DIAL:
+      Enabled: true 
+      Master-URL: <apiGatewayURL>/Prod/DIALv2
+      X-DIALv2-Master-auth: <authenticationToken>
+
+  Static: &defaultStaticMap
+    Enrichment-URL: https://ipinfo.io/ 
+    Account-Id-Map: &defaultStaticAccount-Id-Map
+      PROD: '123412341234'
+      STAGE: '123412341234'
+
+    EC2: &defaultStaticEC2Config
+      Whitelisted-User-Ip:
+        - sampleWhiteListedUsers
+      Event-Map:
+        EC2:
+        - RunInstances
+        - StopInstances
+        - TerminateInstances
+        SG:
+        - CreateSecurityGroup
+        - AuthorizeSecurityGroupIngress
+        - RevokeSecurityGroupIngress
+        - AuthorizeSecurityGroupEgress
+        - RevokeSecurityGroupEgress
+        - DeleteSecurityGroup
+        VPC:
+        - CreateVpcPeeringConnection
+        - AcceptVpcPeeringConnection
+        - ModifyVpcPeeringConnectionOptions
+        - DeleteVpcPeeringConnection
+        - DeleteRouteTable
+        - CreateRouteTable
+        - AssociateRouteTable
+        - CreateRoute
+        - DeleteRoute
+        - AttachInternetGateway
+        - DetachInternetGateway
+        - CreateInternetGateway
+        - DeleteInternetGateway
+        - CreateVpc
+        - DeleteVpc
+        - AssociateVpcCidrBlock
+        - ModifyVpcAttribute
+    S3:
+      Whitelisted-Users:
+
+  Severity:
+    EC2: &defaultSeverityMapEC2
+      RunInstances:
+        Error: LOW
+        SingleInstance: LOW
+        MultipleInstances: LOW
+        Default: LOW
+      StopInstances: 
+        Error: LOW
+        Stopped: MEDIUM
+        Default: MEDIUM
+      TerminateInstances:
+        Error: LOW
+        SingleInstance: LOW
+        MultipleInstances: HIGH
+        Default: LOW
+
+    SecretsManager: &defaultSeverityMapSecretsManager
+      GetSecretValue:
+        Error: MEDIUM
+        Default: MEDIUM
+      UpdateSecret:
+        Error: MEDIUM
+        Default: MEDIUM
+      DeleteSecret:
+        Error: MEDIUM
+        Default: MEDIUM
+      PutSecretValue:
+        Error: MEDIUM
+        Default: MEDIUM
+
+    SSM: &defaultSeverityMapSSM
+      GetParameter:
+        Error: LOW
+        Default: LOW
+      DeleteParameter:
+        Error: MEDIUM
+        Default: MEDIUM
+      PutParameter:
+        Error: LOW
+        Default: LOW
+
+    DB: &defaultSeverityMapDB
+      DeleteDBInstance:
+        Default: LOW
+        Error: LOW
+      DeleteDBCluster:
+        Default: LOW
+        Error: LOW
+      DeleteTable:
+        Default: LOW
+        Error: LOW
+      CreateDBInstance:
+        Default: LOW
+        Error: LOW
+        Dangerous: HIGH
+      CreateDBCluster:
+        Default: LOW
+        Error: LOW
+        Dangerous: HIGH
+      CreateTable:
+        Default: LOW
+        Error: LOW
+      ModifyDBInstance:
+        Default: LOW
+        Error: LOW
+        Dangerous: HIGH
+      ModifyDBCluster:
+        Default: LOW
+        Error: LOW
+        Dangerous: HIGH
+      StopDBInstance:
+        Default: LOW
+        Error: LOW
+      StopDBCluster:
+        Default: LOW
+        Error: LOW
+      StartDBInstance:
+        Default: LOW
+        Error: LOW
+      StartDBCluster:
+        Default: LOW
+        Error: LOW
+        Dangerous: HIGH
+      RebootDBInstance:
+        Default: LOW
+        Error: LOW
+
+    S3: &defaultSeverityMapS3
+      PutObjectAcl:
+        Error: LOW
+        Dangerous: HIGH
+        Default: HIGH
+      PutObject:
+        Error: MEDIUM
+        Dangerous: HIGH
+        Default: HIGH
+      DeleteBucket:
+        Error: MEDIUM
+        Dangerous: HIGH
+        Default: HIGH
+      CreateBucket:
+        Error: MEDIUM
+        Dangerous: HIGH
+        Default: HIGH
+      PutBucketPolicy:
+        Error: MEDIUM
+        Dangerous: HIGH
+        Default: HIGH
+      PutBucketAcl:
+        Error: MEDIUM
+        Dangerous: HIGH
+        Default: HIGH
+
+    VPC: &defaultSeverityMapVPC
+      CreateVPCPeeringConnection:
+        Internal: LOW
+        External: HIGH
+        Default: MEDIUM
+        Error: HIGH
+      AcceptVPCPeeringConnection:
+        Internal: LOW
+        External: HIGH
+        Default: MEDIUM
+        Error: MEDIUM
+      ModifyVpcPeeringConnectionOptions:
+        Internal: LOW
+        External: HIGH
+        Default: MEDIUM
+        Error: MEDIUM
+      DeleteVpcPeeringConnection:
+        Internal: MEDIUM
+        Default: MEDIUM
+        Error: MEDIUM
+      DeleteRouteTable:
+        Internal: MEDIUM
+        Default: MEDIUM
+        Error: MEDIUM
+      CreateRouteTable:
+        Internal: MEDIUM
+        Default: MEDIUM
+        Error: MEDIUM
+      AssociateRouteTable:
+        Internal: LOW
+        External: HIGH
+        Default: MEDIUM
+        Error: MEDIUM
+      CreateRoute:
+        Internal: MEDIUM
+        Default: MEDIUM
+        Error: MEDIUM
+      DeleteRoute:
+        Internal: MEDIUM
+        Default: MEDIUM
+        Error: MEDIUM
+      DetachInternetGateway:
+        Internal: LOW
+        Default: MEDIUM
+        Error: MEDIUM
+      DeleteInternetGateway:
+        Internal: MEDIUM
+        Default: MEDIUM
+        Error: MEDIUM
+      AttachInternetGateway:
+        Internal: LOW
+        Default: MEDIUM
+        Error: MEDIUM
+      CreateInternetGateway:
+        Internal: LOW
+        Default: MEDIUM
+        Error: MEDIUM
+      CreateVpc:
+        Internal: MEDIUM
+        Error: HIGH
+        Default: MEDIUM
+      AssociateVpcCidrBlock:
+        Internal: LOW
+        Error: MEDIUM
+        Default: LOW
+      DeleteVpc:
+        Internal: HIGH
+        Error: HIGH
+        Default: HIGH
+      ModifyVpcAttribute:
+        Internal: HIGH
+        Error: HIGH
+        Default: HIGH
+
+    SG: &defaultSeverityMapSG
+      CreateSecurityGroup:
+        Error: MEDIUM
+        Default: LOW
+      AuthorizeSecurityGroupIngress:
+        Error: MEDIUM
+        Default: LOW
+        Dangerous: HIGH
+      RevokeSecurityGroupIngress:
+        Error: MEDIUM
+        Default: LOW
+      AuthorizeSecurityGroupEgress:
+        Error: MEDIUM
+        Default: LOW
+      RevokeSecurityGroupEgress:
+        Error: MEDIUM
+        Default: LOW
+      DeleteSecurityGroup:
+        Error: MEDIUM
+        Default: LOW
+
+    Generic: &genericSeverityMap # Used by IAM
+      High:
+        Author-Name:
+          - Failed console Login attempt
+          - outside Company infrastructure
+          - deleted
+          - Detached
+          - modified
+          - stopped
+          - public
+          - Bucket made public
+          - Bucket Deleted
+          - Object made public
+        Event-Name:
+          - CreateLoginProfile
+          - DeleteVirtualMFADevice
+          - ConsoleLogin
+      Medium:
+        Author-Name:
+          - IAM Access key
+          - IAM error
+          - RDS error
+          - Attached
+          - initiated
+          - Modified
+          - associated
+        Event-Name:
+          - error
+
+    IAM:
+      << : *genericSeverityMap
+

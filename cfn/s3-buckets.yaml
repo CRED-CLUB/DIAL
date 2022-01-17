@@ -1,0 +1,36 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'DIALv2 Master Lambda'
+
+Parameters:
+  s3BucketName:
+    Description: S3 bucket name to use to store lambda source code for DIALv2.
+    Type: String
+    Default: dialv2-source-repository
+
+Resources:
+  DIALv2SourceRepositoryBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref s3BucketName
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: DIALv2
+  
+Outputs:
+  s3BucketArn:
+    Value: !GetAtt DIALv2SourceRepositoryBucket.Arn
+  s3BucketDomain:
+    Value: !GetAtt DIALv2SourceRepositoryBucket.DomainName
+  s3WebsiteURL:
+    Value: !GetAtt DIALv2SourceRepositoryBucket.WebsiteURL

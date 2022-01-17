@@ -1,0 +1,258 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: DIALv2 Child Controller
+
+Parameters:
+  s3BucketName:
+    Description: S3 bucket name with lambda source code for DIALv2.
+    Type: String
+    Default: dialv2-source-repository-dev
+  lambdaLayerZip:
+    Description: Lambda layer zip file located in the given s3 bucket.
+    Type: String
+    Default: layer.zip
+  lambdaZip:
+    Description: Child controller lambda code (zip) present in the given s3 bucket.
+    Type: String
+    Default: child.zip
+  lambdaRuntime:
+    Description: Child controller python runtime (applies to layer as well)
+    Type: String
+    Default: python3.7
+  lambdaName:
+    Description: DIAL Child controller lambda function name
+    Type: String
+    Default: DIALv2-Child-Controller
+  lambdaRoleName:
+    Description: DIAL Child controller lambda function IAM role name
+    Type: String
+    Default: DIALv2-Child-Lambda-Execution-Role
+  lambdaLayerName:
+    Description: DIAL lambda layer name
+    Type: String
+    Default: DIALv2-Security-Dependencies
+  dialProfile:
+    Description: DIAL Child Controller Profile
+    Type: String
+    Default: default
+    
+Outputs:
+  DIALv2ChildRoleArn:
+    Value:
+      Fn::GetAtt:
+      - DIALv2ChildRole
+      - Arn
+  DIALv2ChildLambdaArn:
+    Value:
+      Fn::GetAtt:
+      - DIALv2ChildLambda
+      - Arn
+
+Resources:
+
+  DIALv2Dependencies:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Description: Python dependencies for DIALv2 lambdas (Master and Child)
+      LayerName:
+        Ref: lambdaLayerName
+      Content:
+        S3Bucket:
+          Ref: s3BucketName
+        S3Key:
+          Ref: lambdaLayerZip
+      CompatibleRuntimes:
+      - Ref: lambdaRuntime
+
+  DIALv2ChildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Ref: lambdaRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: dialv2-get-vpc-details
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ec2:DescribeRouteTables'
+                  - 'ec2:DescribeVpcs'
+                Resource:
+                  - '*'
+
+
+  DIALv2ChildLambda:
+    Type: AWS::Serverless::Function
+    DependsOn:
+    - DIALv2Dependencies
+    - DIALv2ChildRole
+    Properties:
+      FunctionName:
+        Ref: lambdaName
+      Handler: dial.lambda_handler
+      Runtime:
+        Ref: lambdaRuntime
+      CodeUri:
+        Bucket:
+          Ref: s3BucketName
+        Key:
+          Ref: lambdaZip
+      Description: DIALv2 Child Controller Lambda for event processing
+      MemorySize: 128
+      Timeout: 7
+      Environment:
+        Variables:
+          DIAL_PROFILE:
+            Ref: dialProfile
+      Role:
+        Fn::GetAtt:
+        - DIALv2ChildRole
+        - Arn
+      Events:
+        ConsoleLogin:
+          Type: CloudWatchEvent
+          Properties:
+            RetryPolicy:
+              MaximumRetryAttempts: 1
+            Pattern:
+              detail-type:
+                - AWS Console Sign In via CloudTrail
+        GuardDuty:
+          Type: CloudWatchEvent
+          Properties:
+            RetryPolicy:
+              MaximumRetryAttempts: 1
+            Pattern:
+              detail-type:
+                - GuardDuty Finding
+              source:
+                - aws.guardduty
+        Apis:
+          Type: CloudWatchEvent
+          Properties:
+            RetryPolicy:
+              MaximumRetryAttempts: 1
+            Pattern:
+              detail-type:
+              - AWS API Call via CloudTrail
+              source:
+              - aws.ec2
+              - aws.s3
+              - aws.iam
+              detail:
+                eventSource:
+                - ec2.amazonaws.com
+                - s3.amazonaws.com
+                - iam.amazonaws.com
+                eventName:
+                - CreateSecurityGroup
+                - AuthorizeSecurityGroupIngress
+                - RevokeSecurityGroupIngress
+                - AuthorizeSecurityGroupEgress
+                - RevokeSecurityGroupEgress
+                - DeleteSecurityGroup
+                - RunInstances
+                - StopInstances
+                - TerminateInstances
+                - CreateInternetGateway
+                - DeleteInternetGateway
+                - CreateVpc
+                - DeleteVpc
+                - AssociateVpcCidrBlock
+                - ModifyVpcAttribute
+                - CreateVpcPeeringConnection
+                - AcceptVpcPeeringConnection
+                - ModifyVpcPeeringConnectionOptions
+                - DeleteVpcPeeringConnection
+                - DeleteRouteTable
+                - CreateRouteTable
+                - AssociateRouteTable
+                - CreateRoute
+                - DeleteRoute
+                - AttachInternetGateway
+                - DetachInternetGateway
+                - CreateBucket
+                - DeleteBucket
+                - PutBucketAcl
+                - PutBucketPolicy
+                - PutObject
+                - PutObjectAcl
+                - CreateUser
+                - CreateLoginProfile
+                - DeleteLoginProfile
+                - CreateVirtualMFADevice
+                - DeleteVirtualMFADevice
+                - CreateGroup
+                - AddUserToGroup
+                - RemoveUserFromGroup
+                - AttachGroupPolicy
+                - DetachGroupPolicy
+                - DeleteGroup
+                - CreateAccessKey
+                - UpdateAccessKey
+                - DeleteAccessKey
+                - CreatePolicy
+                - AttachUserPolicy
+                - DetachUserPolicy
+                - DeletePolicy
+                - CreateRole
+                - AttachRolePolicy
+                - DetachRolePolicy
+                - DeleteRole
+                - ConsoleLogin
+        Apis2:
+          Type: CloudWatchEvent
+          Properties:
+            RetryPolicy:
+              MaximumRetryAttempts: 1
+            Pattern:
+              detail-type:
+                - AWS API Call via CloudTrail
+              source:
+                - aws.rds
+                - aws.dynamodb
+                - aws.secretsmanager
+                - aws.ssm
+              detail:
+                eventSource:
+                  - rds.amazonaws.com
+                  - dynamodb.amazonaws.com
+                  - secretsmanager.amazonaws.com
+                  - ssm.amazonaws.com
+                eventName:
+                  - DeleteDBInstance
+                  - DeleteDBCluster
+                  - DeleteTable
+                  - CreateDBInstance
+                  - CreateDBCluster
+                  - CreateTable
+                  - ModifyDBInstance
+                  - ModifyDBCluster
+                  - StopDBInstance
+                  - StopDBCluster
+                  - StartDBInstance
+                  - StartDBCluster
+                  - RebootDBInstance
+                  - GetParameter
+                  - DescribeParameters
+                  - PutParameter
+                  - DeleteParameter
+                  - GetSecretValue
+                  - UpdateSecret
+                  - DeleteSecret
+                  - PutSecretValue
+      Layers:
+      - Ref: DIALv2Dependencies

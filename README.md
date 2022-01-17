@@ -8,7 +8,7 @@ Workloads on cloud provide equal opportunities for hackers as much as they do fo
 ---
 **DIAL(Did I Alert Lambda?)** is a centralised security misconfiguration detection framework which completely runs on AWS Managed services like AWS API Gateway, AWS Event Bridge & AWS Lambda. Few of the key features of DIAL includes.
 
-- It's an event driven framework, because of which detection for any misconfigurations is less than 3 seconds. **MTTD(Mean Time to Detect) < 3 secs**.
+- It's an event driven framework, because of which maximum detection time for any misconfigurations is < 7 seconds. **MTTD(Mean Time to Detect) < 4 secs**.
 - It will only be triggered when event of interest are generated.
 - Highly scalable and Cost efficient as it is built on top of AWS lambda and it gets triggered when events of interest are seen.
 - Modular architecture; Which means you can easily add more event handlers and usecases according to your needs.
@@ -78,7 +78,7 @@ We are currently releasing the detection module of DIAL, which will help you to 
     - VPC Peering connection to unknown account
     - Laxed Security groups(0.0.0.0/0 access on ports)
     - Associating private subnet with public route table
-    - Un realistic instance type creation(c6.large etc)
+    - Un realistic instance type creation(p4d.24xlarge etc)
 
 - Secret Manager/SSM Parameter Store
     - Critical secret parameters called by which user

@@ -1,0 +1,151 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'DIALv2 Master Lambda'
+
+Parameters:
+  s3BucketName:
+    Description: S3 bucket name with lambda source code for DIALv2.
+    Type: String
+    Default: dialv2-source-repository-dev
+  lambdaLayerZip:
+    Description: Lambda layer zip file located in the given s3 bucket.
+    Type: String
+    Default: layer.zip
+  lambdaZip:
+    Description: Master node lambda code (zip) present in the given s3 bucket.
+    Type: String
+    Default: master.zip
+  lambdaRuntime:
+    Description: Master node python runtime (applies to layer as well)
+    Type: String
+    Default: python3.7
+  lambdaName:
+    Description: DIAL Master Lambda Function Name
+    Type: String
+    Default: 'DIALv2-Master'
+  lambdaRoleName:
+    Description: DIAL Master Lambda Function Role Name
+    Type: String
+    Default: 'DIALv2-Master-Execution-Role'
+  lambdaLayerName:
+    Description: DIAL Lambda Layer Name
+    Type: String
+    Default: 'DIALv2-Security-Dependencies-Master'
+  dynamoDbTableName:
+    Description: DynamoDB Table Name for storing events
+    Type: String
+    Default: 'dial-security-events'
+  dynamoDbWriteCapacityUnits:
+    Description: DynamoDB Table Write Capacity Units (higher for more accounts)
+    Type: Number
+    Default: 20
+
+Outputs:
+  DIALv2MasterLambdaArn:
+    Value: !Ref DIALv2MasterLambda
+  DIALv2MasterApiGatewayURL:
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/DIALv2"
+  DynamoDbEventsTable:
+    Value: !Ref SecurityEventsDynamoDbTable
+
+Resources:
+
+  DIALv2DependenciesLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Description: Python dependencies for DIALv2 lambdas (Master and Child)
+      LayerName: !Ref lambdaLayerName
+      Content: 
+        S3Bucket: !Ref s3BucketName
+        S3Key: !Ref lambdaLayerZip
+      CompatibleRuntimes:
+      - !Ref lambdaRuntime
+  
+  DIALv2MasterExecutionRole:
+    Type: AWS::IAM::Role
+    DependsOn:
+      - SecurityEventsDynamoDbTable
+    Properties:
+      RoleName: !Ref lambdaRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: DIALDynamoDbWritePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'dynamodb:PutItem'
+                Resource:
+                  - !GetAtt SecurityEventsDynamoDbTable.Arn
+
+  SecurityEventsDynamoDbTable: 
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Group"
+          AttributeType: "S"
+        - 
+          AttributeName: "WriteTime"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Group"
+          KeyType: "HASH"
+        - 
+          AttributeName: "WriteTime"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: !Ref dynamoDbWriteCapacityUnits
+      TableName: !Ref dynamoDbTableName
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    # DeletionPolicy: Retain
+    Properties:
+      StageName: 'Prod'
+
+  DIALv2MasterLambda:
+    Type: 'AWS::Serverless::Function'
+    DependsOn:
+      - DIALv2DependenciesLayer
+      - DIALv2MasterExecutionRole
+    Properties:
+      FunctionName: !Ref lambdaName
+      Description: DIALv2 Master Lambda Function
+      Handler: lambda_function.lambda_handler
+      Runtime: !Ref lambdaRuntime
+      CodeUri: 
+        Bucket: !Ref s3BucketName
+        Key: !Ref lambdaZip
+      MemorySize: 128
+      Timeout: 30
+      Role: !GetAtt DIALv2MasterExecutionRole.Arn
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !Ref dynamoDbTableName
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: '/DIALv2'
+            Method: post
+            RestApiId: !Ref ApiGateway
+      Layers:
+        - !Ref DIALv2DependenciesLayer
+

@@ -1,0 +1,7 @@
+auth:
+  X-DIALv2-Master-auth: <authenticationToken> 
+
+hive:
+  Enabled: false
+  Url: <theHiveInstanceURL>/api/case
+  ApiKey: <apiKey> 
