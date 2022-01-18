@@ -58,7 +58,7 @@ The architecture is broken down into two different components:
 
 ## UseCases covered
 ---
-We are currently releasing the detection module of DIAL, which will help you to detect any misconfigurations, we do plan to release the remediation module in near future. The following are the edge cases that DIAL is currently capable of detecting.
+We are currently releasing the detection module of DIAL, which will help you to detect any misconfigurations, we do plan to release the remediation module in near future. The following are the detection usecases that DIAL is currently capable of detecting and alerting.
 
 
 - IAM
