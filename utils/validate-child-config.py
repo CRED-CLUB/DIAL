@@ -8,10 +8,10 @@ logging.basicConfig(format='[+]%(levelname)8s - %(message)s')
 logger = logging.getLogger('validator')
 
 doc_links = {
-    'Notifications': '',
-    'Static-Config': '',
-    'Severity-Config': '',
-    'Selective-Severity-Config': ''
+    'Notifications': 'https://github.com/CRED-CLUB/DIAL/blob/main/README.md',
+    'Static-Config': 'https://github.com/CRED-CLUB/DIAL/blob/main/cfn/DEPLOY.md',
+    'Severity-Config': 'https://github.com/CRED-CLUB/DIAL/blob/main/cfn/DEPLOY.md',
+    'Selective-Severity-Config': 'https://github.com/CRED-CLUB/DIAL/blob/main/README.md'
 }
 
 def verify_required_variables(vars, obj):
