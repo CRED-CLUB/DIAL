@@ -15,7 +15,7 @@ Workloads on cloud provide equal opportunities for hackers as much as they do fo
 
 To read more about the same, you can go through the following technical [blog](https://blog.cred.club/team-cred/tech/averting-cloud-misconfiguration-at-scale-with-dial/), 
 
-You will be getting alerts as mentioned below
+You will be getting actionable alerts as shown below with all the relevant details:
 
 ![alert-1](images/alert-1.png)
 
