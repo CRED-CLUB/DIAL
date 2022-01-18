@@ -1,0 +1,23 @@
+{
+    "Version": "2012-10-17",
+    "Id": "Policy11234567890",
+    "Statement": [
+        {
+            "Sid": "Stmt11234567890",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+                    "arn:aws:iam::123456789011:root",
+                    "arn:aws:iam::123456789012:root",
+                    "arn:aws:iam::123456789013:root",
+                    "arn:aws:iam::123456789014:root",
+                    "arn:aws:iam::123456789015:root"
+                ]
+            },
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": "arn:aws:s3:::<s3-bucket-name>/child.zip"
+        }
+    ]
+}

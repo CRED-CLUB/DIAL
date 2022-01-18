@@ -134,7 +134,8 @@ Skip this step if you have set `hive.Enabled: False` in master/config.yaml
 	- Create the stack
 
 - StackSet (for multiple account / region deployments)[optional]
-	- Package the child controller as a zip and upload it to an s3 bucket in the root AWS account / delegated admin for stack set account
+	- Package the child controller as a zip and upload it to an s3 bucket in the root AWS account / delegated admin for stack set account.
+	- Add a bucket policy that allows the aws accounts to perform **GetObject** on the child zip package for child controller lambda. ([Example Policy](example-stack-set-bucket-policy.json))
 	- The stack set deployment would require the use of `cfn/child-stack-set-cfn-template.yaml` file as not all stack set deployments support the `AWS::Serverless` Transform.
 	- Create a stack set using the above mentioned template with the appropriate parameters for the selected organizations AWS accounts.
 
