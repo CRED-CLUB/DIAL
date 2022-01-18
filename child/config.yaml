@@ -52,6 +52,7 @@ default:
         - ModifyVpcAttribute
     S3:
       Whitelisted-Users:
+        - exampleWhitelistedUser
 
   Severity:
     EC2: &defaultSeverityMapEC2
