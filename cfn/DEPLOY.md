@@ -142,6 +142,8 @@ Skip this step if you have set `hive.Enabled: False` in master/config.yaml
 
 ## Notes
 - DIAL is a event driven project, which means it will not detect any existsing misconfiguration rather misconfigurations on the incoming events.
+- Currently we are supporting **SLACK** as a main notification service, which can be disabled from [config.yaml](../child/config.yaml), just update the value to the following in config file. `default.Slack.Enabled: false`
+- If you wanna **supress** any specific event handler(S3/EC2/IAM/etc), you can simply remove those events from the EventBridge rule that is added as a trigger on the child controller lambda.
 - You will have to deploy child controllers in **us-east-1** for each account as **IAM** is a global service and all events can be captured on the mentioned region itself. If you choose not to deploy it on **us-east-1** region, you will not be getting any alerts related to **IAM**.
 - The Parent deployment will create **DynamoDB Table and API Gateway Endpoing that will NOT be deleted** when the stack is marked for deletion. This is done to save the security events in the DynamoDB table and the API Gateway Endpoint configured in the child controllers. For changes to parent - updating the cloudformation stack is recommended.
 - The DynamoDB Table created by the Parent cloudformation template does not have autoscaling enabled (Ref: https://medium.com/@CevoAustralia/dynamodb-autoscaling-with-cloudformation-702e16009573) but it is recommended to enable autoscaling for the dynamoDB if the number of events varies over time.
