@@ -13,7 +13,7 @@ Workloads on cloud provide equal opportunities for hackers as much as they do fo
 - Highly scalable and Cost efficient as it is built on top of AWS lambda and it gets triggered when events of interest are seen.
 - Modular architecture; Which means you can easily add more event handlers and usecases according to your needs.
 
-To read more about the same, you can go through the following technical [blog](https://blog.cred.club/team-cred/tech/averting-cloud-misconfiguration-at-scale-with-dial/), 
+To read more about the same, you can go through the following technical [blog](https://blog.cred.club/team-cred/tech/averting-cloud-misconfiguration-at-scale-with-dial/). 
 
 You will be getting actionable alerts as shown below with all the relevant details:
 
