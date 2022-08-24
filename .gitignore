@@ -1,0 +1,12 @@
+env/
+.env
+__pycache__/
+python/
+venv/
+deployment/
+dist/
+out/
+.vscode
+.idea
+.vs
+.DS_Store

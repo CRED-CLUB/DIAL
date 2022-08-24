@@ -82,7 +82,10 @@ class Utils:
     # Check username from useridentity
     def username_fetch(self, identity):
         if "arn" in identity:
-            username = identity['arn']
+            username = identity["arn"]
+            return username
+        elif "userName" in identity:
+            username = identity["userName"]
             return username
         else:
             return "Could not process username from useridentity"

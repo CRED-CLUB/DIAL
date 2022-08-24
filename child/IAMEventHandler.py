@@ -290,7 +290,14 @@ class IAMEventHandler(EventHandler):
             resp.author_name = f"IAM role deleted [{aws_account}]"
             resp.title = "IAM role ["+role_name+"] deleted"
             resp.text = f"*IAM-Role:* {role_name}\n*Initiator:* {resp.userName}\n*Source IP:* {resp.userIp}\n*Location:* {resp.location}"
-            
+        
+        elif resp.eventName == "CheckMfa":
+            print("[+]CheckMFA requested")
+            role_name = event["userIdentity"]["userName"]
+            event_type = event["eventType"]
+            resp.author_name = f"CheckMFA requested for {aws_account}"
+            resp.title = "IAM role requested CheckMfa"
+            resp.text = f"*IAM-Role:* {role_name}\n*Event Type:* {event_type}\n*Initiator:*{resp.userName}\n*Source IP:* {resp.userIp}\n*Location:* {resp.location}"         
         # Console Login Alerts
         elif resp.eventName == "ConsoleLogin":
             print('[+]Checking consolelogin')
