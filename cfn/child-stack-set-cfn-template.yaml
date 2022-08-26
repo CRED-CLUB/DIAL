@@ -145,7 +145,6 @@ Resources:
             - DeleteBucket
             - PutBucketAcl
             - PutBucketPolicy
-            - PutObject
             - PutObjectAcl
             - CreateUser
             - CreateLoginProfile
