@@ -62,7 +62,7 @@ def lambda_handler(event, context):
     except KeyError as parent_exception:
 
         try:
-            if bool(event['schemaVersion']):
+            if bool(event['SchemaVersion']):
                 print('[+]Got guard_duty event')
                 event_handler = GDEventHandler(appConfig)
                 response = event_handler.handle_event(event)
