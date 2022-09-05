@@ -6,6 +6,9 @@ default:
     Slack: 
       Enabled: true
       Hook: <slackWebHookURL>
+    GoogleGroups: 
+      Enabled: true
+      Hook: <GoogleGroupsWebHookURL>
     DIAL:
       Enabled: true 
       Master-URL: <apiGatewayURL>/Prod/DIALv2
