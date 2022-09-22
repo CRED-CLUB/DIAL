@@ -17,6 +17,8 @@ def send_notifications(appConfig, notification):
     try:
         if "Slack" in services and services["Slack"]["Enabled"]:
             SlackNotificationService(appConfig).notify(notification)
+        elif "GoogleGroups" in services and services["GoogleGroups"]["Enabled"]:
+            SlackNotificationService(appConfig).notify(notification)
     
     except Exception as e:
         print(f'[-]Error sending slack notification. error = {e}')
@@ -96,6 +98,108 @@ class SlackNotificationService(NotificationService):
         except Exception as em:
             print("[-] Error sending slack notification: " + str(em))
 
+# Class for Google Groups Notification Service
+class GoogleGroupsNotificationService(NotificationService):
+    def __init__(self, appConfig):
+        SERVICE_NAME = "Google Groups Notification Service"
+        self.google_groups_hook_url = appConfig["Notifications"]["GoogleGroups"]["Hook"]
+        super().__init__(SERVICE_NAME)
+        self.appConfig = appConfig
+
+    def notify(self, eventResponse):
+        color = "#03a9f4"
+        event_url = f"https://{eventResponse.aws_region}.console.aws.amazon.com/cloudtrail/home?region={eventResponse.aws_region}#/events/{eventResponse.eventId}"
+        print(
+            "At Google Groups Notification Service...",
+            eventResponse.event_type,
+            eventResponse.severity,
+        )
+        if eventResponse.event_type == "GuardDuty Event":
+            color = eventResponse.severity_level
+        elif eventResponse.severity.lower() == "high":
+            color = "#9d1111"
+        elif eventResponse.severity.lower() == "medium":
+            color = "#ffae42"
+
+        if (eventResponse.skipped == True) or (
+            eventResponse.title == ""
+            or eventResponse.author_name == ""
+            or eventResponse.text == ""
+        ):
+            print(f"Event: {eventResponse.eventName} SKIPPED.")
+            print(f"Event Details:{eventResponse.eventId}")
+            return
+
+        body = {
+            "cards": [
+                {
+                    "header": {
+                        "imageUrl": "https://raw.githubusercontent.com/g33kyrash/icons/master/aws_icon_1.png",
+                    },
+                    "sections": [
+                        {
+                            "widgets": [
+                                {
+                                    "textParagraph": {
+                                        "text": "<b>{0}</b>\n<i>{1}</i>".format(
+                                            eventResponse.title,
+                                            eventResponse.author_name,
+                                        ),
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "widgets": [
+                                {
+                                    "textParagraph": {
+                                        "text": '{0}\n\n<b>Severity</b>\n<font color="{1}">{2}</font>'.format(
+                                            eventResponse.text,
+                                            color,
+                                            eventResponse.severity,
+                                        ),
+                                    }
+                                },
+                                {
+                                    "textParagraph": {
+                                        "text": "\nDIAL Security Alert | "
+                                        + str(datetime.now())
+                                    }
+                                },
+                                {
+                                    "buttons": [
+                                        {
+                                            "textButton": {
+                                                "text": "Check Event",
+                                                "onClick": {
+                                                    "openLink": {
+                                                        "url": "{0}".format(event_url),
+                                                    }
+                                                },
+                                            }
+                                        }
+                                    ]
+                                },
+                            ]
+                        },
+                    ],
+                }
+            ],
+        }
+        if eventResponse.event_type == "GuardDuty Event":
+            body["attachments"][0]["footer"] = eventResponse.bottom_text + str(
+                datetime.now()
+            )
+        try:
+            headers = {"Content-Type": "application/json; charset=UTF-8"}
+            response = requests.post(
+                self.google_groups_hook_url, headers=headers, json=body
+            )
+            print(
+                f"[*]GoogleGroups Message sent. Response Code : {response.status_code}"
+            )
+        except Exception as em:
+            print("[-] Error sending GoogleGroups notification: " + str(em))
 
 class DialNotficationService(NotificationService):
     def __init__(self, appConfig):
